@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -17,5 +18,5 @@ jobs:
 
       - name: Terraform Plan
         run: |
-        cd terraform
-        terraform init && terraform plan
+          cd terraform
+          terraform init && terraform plan
