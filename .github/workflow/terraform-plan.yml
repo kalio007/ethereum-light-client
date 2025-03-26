@@ -16,4 +16,6 @@ jobs:
         uses: hashicorp/setup-terraform@v2.0.2
 
       - name: Terraform Plan
-        run: terraform init && terraform plan
+        run: |
+        cd terraform
+        terraform init && terraform plan
