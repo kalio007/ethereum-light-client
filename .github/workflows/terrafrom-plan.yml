@@ -27,6 +27,3 @@ jobs:
         with:
           entrypoint: terraform
           args: validate
-
-
-          name: Terraform Workflow
