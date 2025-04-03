@@ -42,9 +42,38 @@ resource "aws_route_table" "public" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
+  tags = {
+    Name = "Ethereum Node Public Route Table"
+  }
 }
 
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public.id
+}
+
+# EC2 Instance for Ethereum Node
+resource "aws_instance" "eth_node" {
+  ami                    = var.instance_ami
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+  subnet_id              = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [aws_security_group.eth_node_sg.id]
+
+  root_block_device {
+    volume_size = 100
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = "Ethereum Light Node"
+  }
+
+  # Generate Ansible inventory
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "[ethereum_nodes]" > inventory.ini
+      echo "${self.public_ip} ansible_user=ubuntu ansible_ssh_private_key_file=${var.private_key_path}" >> inventory.ini
+    EOT
+  }
 }
