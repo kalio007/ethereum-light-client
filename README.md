@@ -1,4 +1,4 @@
-# Ethereum Light Node S
+# Ethereum Light Client Node
 
 This project sets up an Ethereum light node on AWS using Terraform and Ansible.
 

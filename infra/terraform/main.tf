@@ -51,12 +51,16 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public.id
 }
+resource "aws_key_pair" "ethereum_node_key" {
+  key_name   = "ethereum_node"
+  public_key = file("${var.private_key_path}.pub")
+}
 
 # EC2 Instance for Ethereum Node
 resource "aws_instance" "eth_node" {
   ami                    = var.instance_ami
   instance_type          = var.instance_type
-  key_name               = var.key_name
+  key_name               = aws_key_pair.ethereum_node_key.key_name
   subnet_id              = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.eth_node_sg.id]
 

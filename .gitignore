@@ -3,7 +3,9 @@
 # terraform.*
 variables.tf
 terraform.tfstate
+terraform.tfvars
 terraform.tfstate.backup
 
 .DS_store
 inventory.ini
+ethereum_node*

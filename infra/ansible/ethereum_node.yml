@@ -49,7 +49,7 @@
           [Service]
           User=ubuntu
           Type=simple
-          ExecStart=/usr/bin/geth --syncmode "light" --datadir /opt/ethereum --cache 1024
+          ExecStart=/usr/bin/geth --syncmode snap --datadir /opt/ethereum --cache 1024 --port 30304
           Restart=on-failure
           RestartSec=10
           LimitNOFILE=65535
