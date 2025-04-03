@@ -1,22 +1,26 @@
-name: Terraform Plan
+name: Terraform CI
 
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - master
 
 jobs:
-  terraform:
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v2
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2.0.2
+      - name: Run a Terraform init
+        uses: docker://hashicorp/terraform:0.12.11
+        with:
+          entrypoint: terraform
+          args: init
 
-      - name: Terraform Plan
-        run: |
-          cd terraform
-          terraform init && terraform plan
+      - name: Run a Terraform validate
+        uses: docker://hashicorp/terraform:0.12.11
+        with:
+          entrypoint: terraform
+          args: validate
