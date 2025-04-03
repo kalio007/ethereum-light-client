@@ -9,3 +9,4 @@ terraform.tfstate.backup
 .DS_store
 inventory.ini
 ethereum_node*
+.env
