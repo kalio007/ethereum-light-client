@@ -4,9 +4,9 @@ include .env
 # Default target
 all: deploy
 
-# Deploy the Ethereum node using Ansible
-deploy:
-	ansible-playbook -i inventory.yml ethereum-node.yml
+# Deploy the Ethereum node using provided Ansible command
+ansible:
+	ansible-playbook -i ../terraform/inventory.ini ethereum_node.yml --private-key=$(SSH_KEY_PATH)
 
 # SSH into the Ethereum node
 ssh:
