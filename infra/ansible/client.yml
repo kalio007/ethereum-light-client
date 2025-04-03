@@ -1,0 +1,79 @@
+---
+- hosts: ethereum_nodes
+  become: yes
+  vars:
+    ethereum_user: ethereum
+    geth_version: latest
+    network: holesky
+    data_dir: "/home/{{ ethereum_user }}/.ethereum"
+
+  tasks:
+    - name: Update and upgrade system packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install required system packages
+      apt:
+        name:
+          - wget
+          - software-properties-common
+          - curl
+          - gpg
+        state: present
+
+    - name: Create ethereum user
+      user:
+        name: "{{ ethereum_user }}"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Create ethereum data directory
+      file:
+        path: "{{ data_dir }}"
+        state: directory
+        owner: "{{ ethereum_user }}"
+        group: "{{ ethereum_user }}"
+
+    - name: Download and install Geth
+      block:
+        - name: Fetch latest Geth release
+          uri:
+            url: https://api.github.com/repos/ethereum/go-ethereum/releases/latest
+            return_content: yes
+          register: geth_release
+
+        - name: Extract Geth version
+          set_fact:
+            geth_download_version: "{{ geth_release.json.tag_name | replace('v', '') }}"
+
+        - name: Download Geth
+          get_url:
+            url: "https://geth.ethereum.org/downloads/geth-linux-amd64-{{ geth_download_version }}.tar.gz"
+            dest: "/tmp/geth.tar.gz"
+
+        - name: Extract Geth
+          unarchive:
+            src: "/tmp/geth.tar.gz"
+            dest: "/usr/local/bin"
+            remote_src: yes
+            extra_opts: [--strip-components=1]
+
+    - name: Create systemd service for Ethereum light node
+      template:
+        src: ethereum-node.service.j2
+        dest: /etc/systemd/system/ethereum-light-node.service
+      notify:
+        - Reload systemd
+        - Restart ethereum node
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart ethereum node
+      systemd:
+        name: ethereum-light-node
+        state: restarted
+        enabled: yes

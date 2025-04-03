@@ -1,0 +1,75 @@
+---
+- name: Configure Ethereum Light Node
+  hosts: ethereum_nodes
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - software-properties-common
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Add Ethereum PPA
+      apt_repository:
+        repo: ppa:ethereum/ethereum
+        state: present
+
+    - name: Install Geth (Go Ethereum Client)
+      apt:
+        name: ethereum
+        state: present
+        update_cache: yes
+
+    - name: Create Ethereum data directory
+      file:
+        path: /opt/ethereum
+        state: directory
+        mode: "0755"
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Create systemd service file for Ethereum light node
+      copy:
+        dest: /etc/systemd/system/geth.service
+        content: |
+          [Unit]
+          Description=Ethereum Light Client
+          After=network.target
+
+          [Service]
+          User=ubuntu
+          Type=simple
+          ExecStart=/usr/bin/geth --syncmode "light" --datadir /opt/ethereum --cache 1024
+          Restart=on-failure
+          RestartSec=10
+          LimitNOFILE=65535
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: "0644"
+
+    - name: Enable and start Geth service
+      systemd:
+        name: geth
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    - name: Show Ethereum node status
+      shell: systemctl status geth
+      register: geth_status
+      changed_when: false
+
+    - name: Display Ethereum node status
+      debug:
+        var: geth_status.stdout_lines
